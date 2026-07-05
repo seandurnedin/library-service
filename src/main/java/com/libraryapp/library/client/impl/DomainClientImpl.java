@@ -6,6 +6,7 @@ import com.libraryapp.library.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
@@ -77,6 +78,7 @@ public class DomainClientImpl implements DomainClient {
             body.put("userGroup", link(Resources.USER_GROUPS, user.getUserGroupId()));
         }
         return restClient.post().uri(Endpoints.USERS)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(UserDto.class);
@@ -99,6 +101,7 @@ public class DomainClientImpl implements DomainClient {
         if (patch.getAddress() != null) body.put("address", patch.getAddress());
         if (patch.getUserGroupId() != null) body.put("userGroup", link(Resources.USER_GROUPS, patch.getUserGroupId()));
         return restClient.patch().uri(Endpoints.USER_BY_ID, userId)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(UserDto.class);
@@ -130,6 +133,7 @@ public class DomainClientImpl implements DomainClient {
     @Override
     public UserGroupDto createUserGroup(UserGroupDto dto) {
         return restClient.post().uri(Endpoints.USER_GROUPS)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(dto)
                 .retrieve()
                 .body(UserGroupDto.class);
@@ -179,6 +183,7 @@ public class DomainClientImpl implements DomainClient {
     @Override
     public BookDto createBook(BookDto book) {
         return restClient.post().uri(Endpoints.BOOKS)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(book)
                 .retrieve()
                 .body(BookDto.class);
@@ -198,6 +203,7 @@ public class DomainClientImpl implements DomainClient {
         if (patch.getAvailableCopies() != null) body.put("availableCopies", patch.getAvailableCopies());
         if (patch.getStatus() != null) body.put("status", patch.getStatus().name());
         return restClient.patch().uri(Endpoints.BOOK_BY_ID, id)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(BookDto.class);
@@ -220,6 +226,7 @@ public class DomainClientImpl implements DomainClient {
         body.put("status", dto.getStatus().name());
         body.put("lateFee", dto.getLateFee() != null ? dto.getLateFee() : 0.0);
         return restClient.post().uri(Endpoints.BORROWING_RECORDS)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(BorrowingRecordDto.class);
@@ -239,6 +246,7 @@ public class DomainClientImpl implements DomainClient {
         if (patch.getStatus() != null) body.put("status", patch.getStatus().name());
         if (patch.getLateFee() != null) body.put("lateFee", patch.getLateFee());
         return restClient.patch().uri(Endpoints.BORROWING_RECORD_BY_ID, id)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(BorrowingRecordDto.class);
@@ -272,6 +280,7 @@ public class DomainClientImpl implements DomainClient {
         body.put("status", dto.getStatus().name());
         body.put("queuePosition", dto.getQueuePosition());
         return restClient.post().uri(Endpoints.RESERVATIONS)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(ReservationDto.class);
@@ -283,6 +292,7 @@ public class DomainClientImpl implements DomainClient {
         if (patch.getStatus() != null) body.put("status", patch.getStatus().name());
         if (patch.getQueuePosition() != null) body.put("queuePosition", patch.getQueuePosition());
         return restClient.patch().uri(Endpoints.RESERVATION_BY_ID, id)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(ReservationDto.class);
@@ -327,6 +337,7 @@ public class DomainClientImpl implements DomainClient {
         body.put("type", dto.getType().name());
         body.put("status", dto.getStatus() != null ? dto.getStatus().name() : "PENDING");
         return restClient.post().uri(Endpoints.PAYMENTS)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(PaymentDto.class);
@@ -344,6 +355,7 @@ public class DomainClientImpl implements DomainClient {
         Map<String, Object> body = new LinkedHashMap<>();
         if (patch.getStatus() != null) body.put("status", patch.getStatus().name());
         return restClient.patch().uri(Endpoints.PAYMENT_BY_ID, id)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(PaymentDto.class);
@@ -367,6 +379,7 @@ public class DomainClientImpl implements DomainClient {
         body.put("bookId", dto.getBookId());
         body.put("bookTitle", dto.getBookTitle());
         return restClient.post().uri(Endpoints.NOTIFICATIONS)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(NotificationDto.class);
@@ -383,13 +396,8 @@ public class DomainClientImpl implements DomainClient {
     public NotificationDto markNotificationRead(Long id) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("read", true);
-        var debugResponse = restClient.patch().uri(Endpoints.NOTIFICATION_BY_ID, id)
-                .body(body)
-                .retrieve()
-                .toEntity(String.class);
-        log.warn("DEBUG markNotificationRead status={} contentType={} body={}",
-                debugResponse.getStatusCode(), debugResponse.getHeaders().getContentType(), debugResponse.getBody());
         return restClient.patch().uri(Endpoints.NOTIFICATION_BY_ID, id)
+                .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(NotificationDto.class);

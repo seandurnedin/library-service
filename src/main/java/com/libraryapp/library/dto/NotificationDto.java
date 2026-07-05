@@ -1,5 +1,6 @@
 package com.libraryapp.library.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,8 @@ public class NotificationDto {
     private Long bookId;
     private String bookTitle;
     private Boolean read;
+
+    @JsonAlias("createdAt")
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 }
