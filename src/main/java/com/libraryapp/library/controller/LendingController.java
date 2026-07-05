@@ -39,4 +39,10 @@ public class LendingController {
         Long userId = (Long) request.getAttribute("userId");
         return lendingService.getLoanedBooks(userId);
     }
+
+    @Operation(summary = "View every active loan for a book (MANAGER)")
+    @GetMapping("/book/{bookId}")
+    public List<BorrowingRecordDto> loansForBook(@PathVariable Long bookId) {
+        return lendingService.getLoansForBook(bookId);
+    }
 }

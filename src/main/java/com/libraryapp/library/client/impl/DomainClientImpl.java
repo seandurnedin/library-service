@@ -273,6 +273,16 @@ public class DomainClientImpl implements DomainClient {
     }
 
     @Override
+    public List<BorrowingRecordDto> getActiveBorrowingRecordsForBook(Long bookId) {
+        HalPage<BorrowingRecordDto> page = restClient.get()
+                .uri(Endpoints.BORROWING_RECORDS_ACTIVE_FOR_BOOK, bookId)
+                .retrieve()
+                .body(new ParameterizedTypeReference<HalPage<BorrowingRecordDto>>() {
+                });
+        return page.content();
+    }
+
+    @Override
     public ReservationDto createReservation(Long userId, Long bookId, ReservationDto dto) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("user", link(Resources.USERS, userId));

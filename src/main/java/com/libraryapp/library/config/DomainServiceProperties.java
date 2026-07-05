@@ -45,6 +45,8 @@ public class DomainServiceProperties {
         public static final String BORROWING_RECORDS_BY_USER = "/api/borrowing-records/search/by-user?userId={userId}";
         public static final String BORROWING_RECORDS_BY_USER_AND_STATUS =
                 "/api/borrowing-records/search/by-user-and-status?userId={userId}&status={status}";
+        public static final String BORROWING_RECORDS_ACTIVE_FOR_BOOK =
+                "/api/borrowing-records/search/active-for-book?bookId={bookId}&status=ON_LOAN,OVERDUE";
 
         public static final String RESERVATIONS = "/api/reservations";
         public static final String RESERVATION_BY_ID = "/api/reservations/{id}";

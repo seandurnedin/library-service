@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class CatalogueServiceImpl implements CatalogueService {
@@ -20,9 +22,15 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public BookDto addBook(AddBookRequest request) {
-        if (domainClient.findBookByIsbn(request.getIsbn()) != null) {
-            throw new DuplicateResourceException("A book with ISBN " + request.getIsbn() + " already exists");
+        BookDto existing = domainClient.findBookByIsbn(request.getIsbn());
+        if (existing != null) {
+            if (!matchesExistingBook(existing, request)) {
+                throw new DuplicateResourceException(
+                        "A book with ISBN " + request.getIsbn() + " already exists with different details");
+            }
+            return addCopiesToExistingBook(existing, request.getTotalCopies() == null ? 1 : request.getTotalCopies());
         }
+
         int copies = request.getTotalCopies() == null ? 1 : request.getTotalCopies();
         BookDto newBook = BookDto.builder()
                 .isbn(request.getIsbn())
@@ -36,6 +44,31 @@ public class CatalogueServiceImpl implements CatalogueService {
                 .status(EBookStatus.IN_STORE)
                 .build();
         return domainClient.createBook(newBook);
+    }
+    
+    private boolean matchesExistingBook(BookDto existing, AddBookRequest request) {
+        return textEquals(existing.getTitle(), request.getTitle())
+                && textEquals(existing.getAuthor(), request.getAuthor())
+                && textEquals(existing.getPublisher(), request.getPublisher())
+                && Objects.equals(existing.getPublishedYear(), request.getPublishedYear())
+                && textEquals(existing.getGenre(), request.getGenre());
+    }
+
+    private boolean textEquals(String a, String b) {
+        String normalizedA = a == null ? "" : a.trim().toLowerCase();
+        String normalizedB = b == null ? "" : b.trim().toLowerCase();
+        return normalizedA.equals(normalizedB);
+    }
+
+    private BookDto addCopiesToExistingBook(BookDto existing, int additionalCopies) {
+        int currentTotal = existing.getTotalCopies() != null ? existing.getTotalCopies() : 0;
+        int currentAvailable = existing.getAvailableCopies() != null ? existing.getAvailableCopies() : 0;
+        BookDto patch = BookDto.builder()
+                .totalCopies(currentTotal + additionalCopies)
+                .availableCopies(currentAvailable + additionalCopies)
+                .status(EBookStatus.IN_STORE)
+                .build();
+        return domainClient.updateBook(existing.getId(), patch);
     }
 
     @Override

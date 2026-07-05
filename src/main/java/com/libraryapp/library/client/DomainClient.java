@@ -52,6 +52,8 @@ public interface DomainClient {
 
     List<BorrowingRecordDto> getBorrowingRecordsByUserAndStatus(Long userId, String status);
 
+    List<BorrowingRecordDto> getActiveBorrowingRecordsForBook(Long bookId);
+
     // Reservations
     ReservationDto createReservation(Long userId, Long bookId, ReservationDto dto);
 

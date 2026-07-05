@@ -180,4 +180,9 @@ public class LendingServiceImpl implements LendingService {
         loans.addAll(domainClient.getBorrowingRecordsByUserAndStatus(userId, EBorrowingStatus.OVERDUE.name()));
         return loans;
     }
+
+    @Override
+    public List<BorrowingRecordDto> getLoansForBook(Long bookId) {
+        return domainClient.getActiveBorrowingRecordsForBook(bookId);
+    }
 }

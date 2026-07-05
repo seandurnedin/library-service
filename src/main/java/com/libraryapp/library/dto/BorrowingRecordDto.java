@@ -19,6 +19,7 @@ public class BorrowingRecordDto {
 
     private Long id;
     private Long userId;
+    private String username;
     private Long bookId;
     private String bookTitle;
     private LocalDate borrowDate;

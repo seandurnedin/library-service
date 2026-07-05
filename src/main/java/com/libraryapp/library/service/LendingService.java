@@ -11,4 +11,6 @@ public interface LendingService {
     BorrowingRecordDto returnBook(String username, String isbn);
 
     List<BorrowingRecordDto> getLoanedBooks(Long userId);
+
+    List<BorrowingRecordDto> getLoansForBook(Long bookId);
 }

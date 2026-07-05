@@ -65,6 +65,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/books/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/books/**").hasRole("MANAGER")
                         .requestMatchers("/api/lending/loan", "/api/lending/return").hasRole("MANAGER")
+                        .requestMatchers("/api/lending/book/**").hasRole("MANAGER")
                         .requestMatchers("/api/payments/authorise").hasRole("MANAGER")
                         .requestMatchers("/api/reservations/book/**").hasRole("MANAGER")
                         // Admin: roles & groups
