@@ -23,14 +23,29 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentDto makePayment(Long userId, PaymentRequest request) {
+
+        BigDecimal outstanding = domainClient.getPaymentsByUser(userId).stream()
+                .filter(p -> p.getStatus() == EPaymentStatus.PENDING)
+                .map(PaymentDto::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        if (outstanding.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessRuleException("You have no outstanding balance to pay");
+        }
+
+        BigDecimal amount = request.getAmount().setScale(2, RoundingMode.HALF_UP);
+        if (amount.compareTo(outstanding) > 0) {
+            throw new BusinessRuleException(
+                    "Payment (" + amount + ") exceeds your outstanding balance (" + outstanding + ")");
+        }
+
         PaymentDto newPayment = PaymentDto.builder()
                 .amount(request.getAmount())
                 .type(request.getType())
                 .status(EPaymentStatus.PENDING)
                 .build();
-
-        // Mock payment gateway: always succeeds immediately. Swap this for a real
-        // gateway call (Stripe/Adyen/etc.) behind the same interface later.
+        
         PaymentDto created = domainClient.createPayment(userId, request.getBorrowingRecordId(), newPayment);
         return domainClient.updatePayment(created.getId(), PaymentDto.builder().status(EPaymentStatus.PAID).build());
     }
