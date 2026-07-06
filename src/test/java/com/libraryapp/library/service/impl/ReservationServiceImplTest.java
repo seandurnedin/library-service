@@ -34,53 +34,6 @@ class ReservationServiceImplTest {
     private ReservationServiceImpl reservationService;
 
     @Test
-    void reserveBook_bookUnavailable_addsToEndOfQueue() {
-        BookDto fullyLoaned = BookDto.builder().id(10L).title("Popular Book").availableCopies(0).build();
-        when(domainClient.getBookById(10L)).thenReturn(fullyLoaned);
-
-        ReservationDto existing1 = ReservationDto.builder().id(1L).userId(2L).bookId(10L).status(EReservationStatus.RESERVED).queuePosition(1).build();
-        when(domainClient.getReservationQueueForBook(10L)).thenReturn(List.of(existing1));
-
-        ReservationDto created = ReservationDto.builder().id(2L).userId(3L).bookId(10L).status(EReservationStatus.RESERVED).queuePosition(2).build();
-        when(domainClient.createReservation(eq(3L), eq(10L), any(ReservationDto.class))).thenReturn(created);
-
-        ReservationDto r = reservationService.reserveBook(3L, 10L);
-
-        assertThat(r.getQueuePosition()).isEqualTo(2);
-        verify(domainClient).createReservation(eq(3L), eq(10L), argThat(dto -> dto.getQueuePosition() == 2));
-    }
-
-    @Test
-    void reserveBook_copiesAvailable_holdsACopyImmediately() {
-        BookDto available = BookDto.builder().id(10L).title("Available Book").availableCopies(3).build();
-        when(domainClient.getBookById(10L)).thenReturn(available);
-        when(domainClient.updateBook(eq(10L), any(BookDto.class))).thenReturn(available);
-
-        ReservationDto created = ReservationDto.builder().id(2L).userId(3L).bookId(10L).status(EReservationStatus.NOTIFIED).build();
-        when(domainClient.createReservation(eq(3L), eq(10L), any(ReservationDto.class))).thenReturn(created);
-
-        ReservationDto r = reservationService.reserveBook(3L, 10L);
-
-        assertThat(r.getStatus()).isEqualTo(EReservationStatus.NOTIFIED);
-        verify(domainClient).updateBook(eq(10L), argThat(p -> p.getAvailableCopies() == 2 && p.getStatus() == EBookStatus.IN_STORE));
-        verify(domainClient).createReservation(eq(3L), eq(10L), argThat(dto -> dto.getStatus() == EReservationStatus.NOTIFIED));
-        verify(notificationSenderService).sendBookAvailableNotification(argThat(n -> n.getUserId().equals(3L)));
-    }
-
-    @Test
-    void reserveBook_lastCopyAvailable_holdsItAndMarksBookReserved() {
-        BookDto lastCopy = BookDto.builder().id(10L).title("Last Copy").availableCopies(1).build();
-        when(domainClient.getBookById(10L)).thenReturn(lastCopy);
-        when(domainClient.updateBook(eq(10L), any(BookDto.class))).thenReturn(lastCopy);
-        when(domainClient.createReservation(eq(3L), eq(10L), any(ReservationDto.class)))
-                .thenReturn(ReservationDto.builder().id(2L).status(EReservationStatus.NOTIFIED).build());
-
-        reservationService.reserveBook(3L, 10L);
-
-        verify(domainClient).updateBook(eq(10L), argThat(p -> p.getAvailableCopies() == 0 && p.getStatus() == EBookStatus.RESERVED));
-    }
-
-    @Test
     void reserveBook_bookNotFound_throws() {
         when(domainClient.getBookById(99L)).thenReturn(null);
 

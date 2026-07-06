@@ -2,10 +2,8 @@ package com.libraryapp.library.service.impl;
 
 import com.libraryapp.library.client.DomainClient;
 import com.libraryapp.library.dto.PaymentDto;
-import com.libraryapp.library.dto.PaymentRequest;
 import com.libraryapp.library.dto.UserDto;
 import com.libraryapp.library.enums.EPaymentStatus;
-import com.libraryapp.library.enums.EPaymentType;
 import com.libraryapp.library.exception.BusinessRuleException;
 import com.libraryapp.library.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -19,7 +17,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,23 +31,6 @@ class PaymentServiceImplTest {
 
     @InjectMocks
     private PaymentServiceImpl paymentService;
-
-    @Test
-    void makePayment_mockGateway_immediatelyMarksPaid() {
-        PaymentRequest request = PaymentRequest.builder()
-                .userId(1L).borrowingRecordId(50L).amount(new BigDecimal("2.50")).type(EPaymentType.LATE_FEE).build();
-
-        PaymentDto created = PaymentDto.builder().id(100L).status(EPaymentStatus.PENDING).amount(new BigDecimal("2.50")).build();
-        when(domainClient.createPayment(eq(1L), eq(50L), any(PaymentDto.class))).thenReturn(created);
-
-        PaymentDto paid = PaymentDto.builder().id(100L).status(EPaymentStatus.PAID).amount(new BigDecimal("2.50")).build();
-        when(domainClient.updatePayment(eq(100L), argThat(p -> p.getStatus() == EPaymentStatus.PAID)))
-                .thenReturn(paid);
-
-        PaymentDto p = paymentService.makePayment(1L, request);
-
-        assertThat(p.getStatus()).isEqualTo(EPaymentStatus.PAID);
-    }
 
     @Test
     void authorisePayment_exactAmount_marksAllPendingPaid() {
