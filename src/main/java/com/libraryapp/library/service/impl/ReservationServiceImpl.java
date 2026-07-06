@@ -32,6 +32,23 @@ public class ReservationServiceImpl implements ReservationService {
             throw new ResourceNotFoundException("Book not found: " + bookId);
         }
 
+        // Check if copies is 0 or less, can't be reserved
+        int totalCopies = book.getTotalCopies() == null ? 0 : book.getTotalCopies();
+        if (totalCopies <= 0) {
+            throw new BusinessRuleException(
+                    "\"" + book.getTitle() + "\" has no copies in the catalogue and can't be reserved");
+        }
+
+        // A user can only hold one active reservation per book.
+        boolean alreadyReserved = domainClient.getReservationsByUser(userId).stream()
+                .anyMatch(r -> bookId.equals(r.getBookId())
+                        && (r.getStatus() == EReservationStatus.RESERVED
+                        || r.getStatus() == EReservationStatus.NOTIFIED));
+        if (alreadyReserved) {
+            throw new BusinessRuleException(
+                    "You already have an active reservation for \"" + book.getTitle() + "\"");
+        }
+
         int available = book.getAvailableCopies() == null ? 0 : book.getAvailableCopies();
         return available > 0 ? holdAvailableCopy(userId, book) : joinWaitlist(userId, book);
     }
